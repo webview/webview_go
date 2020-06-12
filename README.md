@@ -1,2 +1,3 @@
 # webview_go
-Go bindings for webview_core
+
+For the foreseeable future, golang bindings for webview_core will be maintained in https://github.com/webview/webview 
