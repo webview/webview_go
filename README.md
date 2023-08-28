@@ -12,38 +12,34 @@ Go language binding for the [webview library][webview].
 
 See [Go package documentation][go-docs] for the Go API documentation, or simply read the source code.
 
-Start with creating a new directory structure for your project:
+Start with creating a new directory structure for your project.
 
 ```sh
 mkdir my-project && cd my-project
-mkdir build
 ```
 
-Create a new Go module:
+Create a new Go module.
 
 ```sh
-go mod init example.com/m
+go mod init example.com/app
 ```
 
-Save the basic Go example into your project directory:
+Save one of the example programs into your project directory.
 
 ```sh
-curl -sSLo basic.go "https://raw.githubusercontent.com/webview/webview_go/master/examples/basic/main.go"
+curl -sSLo main.go "https://raw.githubusercontent.com/webview/webview_go/master/examples/basic/main.go"
 ```
 
-Install dependencies:
+Install dependencies.
 
 ```sh
 go get github.com/webview/webview_go
 ```
 
-Build and run the example:
+Build the example. On Windows, add `-ldflags="-H windowsgui"` to the command line.
 
 ```sh
-# Linux, macOS
-go build -o build/basic basic.go && ./build/basic
-# Windows
-go build -ldflags="-H windowsgui" -o build/basic.exe basic.go && "build/basic.exe"
+go build
 ```
 
 ### Notes
