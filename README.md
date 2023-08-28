@@ -1,7 +1,12 @@
-# webview bindings for Go
+# webview
 
 [![GoDoc](https://godoc.org/github.com/webview/webview_go?status.svg)](https://godoc.org/github.com/webview/webview_go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/webview/webview_go)](https://goreportcard.com/report/github.com/webview/webview_go)
+
+Go language binding for the [webview library][webview].
+
+> [!NOTE]
+> Versions <= 0.1.1 are available in the [old repository][webview].
 
 ### Getting Started
 
@@ -45,4 +50,5 @@ go build -ldflags="-H windowsgui" -o build/basic.exe basic.go && "build/basic.ex
 
 Calling `Eval()` or `Dispatch()` before `Run()` does not work because the webview instance has only been configured and not yet started.
 
-[go-docs]:           https://pkg.go.dev/github.com/webview/webview
+[go-docs]: https://pkg.go.dev/github.com/webview/webview_go
+[webview]: https://github.com/webview/webview
