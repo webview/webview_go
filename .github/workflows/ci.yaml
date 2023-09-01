@@ -1,0 +1,21 @@
+name: CI Pipeline
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        image:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev
+      - name: Build examples
+        run: go build ./examples/basic ./examples/bind
+      - name: Run tests
+        run: go test
