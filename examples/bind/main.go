@@ -2,19 +2,17 @@ package main
 
 import webview "github.com/webview/webview_go"
 
-const html = `<button id="increment">Tap me</button>
+const html = `<html style="background: #1B2845; color: #eee;">
+<button onclick="increment();">Tap me</button>
 <div>You tapped <span id="count">0</span> time(s).</div>
 <script>
-  const [incrementElement, countElement] =
-    document.querySelectorAll("#increment, #count");
-  document.addEventListener("DOMContentLoaded", () => {
-    incrementElement.addEventListener("click", () => {
-      window.increment().then(result => {
-        countElement.textContent = result.count;
-      });
-    });
-  });
-</script>`
+	const counter = document.getElementById("count")
+	async function increment() {
+		const result = await window.Increment()
+		counter.textContent = result.count;
+	}
+</script>
+</html>`
 
 type IncrementResult struct {
 	Count uint `json:"count"`
@@ -28,7 +26,7 @@ func main() {
 	w.SetSize(480, 320, webview.HintNone)
 
 	// A binding that increments a value and immediately returns the new value.
-	w.Bind("increment", func() IncrementResult {
+	w.Bind("Increment", func() IncrementResult {
 		count++
 		return IncrementResult{Count: count}
 	})
