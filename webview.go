@@ -20,6 +20,7 @@ package webview
 
 void CgoWebViewDispatch(webview_t w, uintptr_t arg);
 void CgoWebViewBind(webview_t w, const char *name, uintptr_t index);
+void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
@@ -113,6 +114,9 @@ type WebView interface {
 	// f must be a function
 	// f must return either value and error or just error
 	Bind(name string, f interface{}) error
+
+	// Removes a callback that was previously set by Bind.
+	Unbind(name string) error
 }
 
 type webview struct {
@@ -311,5 +315,12 @@ func (w *webview) Bind(name string, f interface{}) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	C.CgoWebViewBind(w.w, cname, C.uintptr_t(index))
+	return nil
+}
+
+func (w *webview) Unbind(name string) error {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	C.CgoWebViewUnbind(w.w, cname)
 	return nil
 }
