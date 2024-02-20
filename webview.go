@@ -189,7 +189,7 @@ func (w *webview) SetTitle(title string) {
 }
 
 func (w *webview) SetSize(width int, height int, hint Hint) {
-	C.webview_set_size(w.w, C.int(width), C.int(height), C.int(hint))
+	C.webview_set_size(w.w, C.int(width), C.int(height), C.webview_hint_t(hint))
 }
 
 func (w *webview) Init(js string) {
