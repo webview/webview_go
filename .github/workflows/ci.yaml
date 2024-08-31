@@ -3,19 +3,41 @@ on: [push, pull_request]
 
 jobs:
   build:
-    strategy:
-      matrix:
-        image:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
     runs-on: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Go 1.23 was the latest version as of 2024-08-31 but the action output a "warning":
+        # Failed to restore: "/usr/bin/tar" failed with error: The process '/usr/bin/tar' failed with exit code 2
+        # Go 1.22 didn't output the above "warning" so we're using this version.
+        # Go 1.14 made -mod=vendor default.
+        # Go 1.13 is the version set in go.mod.
+        include:
+          - { image: macos-14,     go: '1.22' }
+          # macos-12 runner has x86_64 support which is needed for old versions of Go
+          - { image: macos-12,     go: '1.13' }
+          - { image: ubuntu-22.04, go: '1.22' }
+          - { image: ubuntu-22.04, go: '1.14' }
+          - { image: ubuntu-22.04, go: '1.13' }
+          - { image: windows-2022, go: '1.22' }
+          # Go 1.20 is the earliest version that is usable in this environment as of 2024-08-31.
+          # Compilation fails with older versions:
+          # [...]/bin/ld.exe: [...]\go-link-3209855222\000008.o: in function `x_cgo_thread_start':
+          # \\_\_\runtime\cgo/gcc_util.c:18: undefined reference to `__imp___iob_func'
+          - { image: windows-2022, go: '1.20' }
+    name: Build (${{ matrix.image }}, go ${{ matrix.go }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.0-dev
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
       - name: Build examples
-        run: go build ./examples/basic ./examples/bind
+        run: >
+          go build
+          ./examples/basic
+          ./examples/bind
       - name: Run tests
         run: go test
