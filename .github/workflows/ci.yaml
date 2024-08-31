@@ -14,12 +14,31 @@ jobs:
         # Go 1.13 is the version set in go.mod.
         include:
           - { image: macos-14,     go: '1.22' }
+          - { image: macos-14,     go: '1.21' }
+          - { image: macos-14,     go: '1.20' }
+          # Go 1.19 is the earliest version available for ARM64.
+          - { image: macos-14,     go: '1.19' }
           # macos-12 runner has x86_64 support which is needed for old versions of Go
+          - { image: macos-12,     go: '1.18' }
+          - { image: macos-12,     go: '1.17' }
+          - { image: macos-12,     go: '1.16' }
+          - { image: macos-12,     go: '1.15' }
+          - { image: macos-12,     go: '1.14' }
           - { image: macos-12,     go: '1.13' }
-          - { image: ubuntu-22.04, go: '1.22' }
-          - { image: ubuntu-22.04, go: '1.14' }
-          - { image: ubuntu-22.04, go: '1.13' }
+          - { image: ubuntu-22.04, go: '1.22', apt: libgtk-4-dev libwebkitgtk-6.0-dev }
+          - { image: ubuntu-22.04, go: '1.22', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.22', apt: libgtk-3-dev libwebkit2gtk-4.0-dev }
+          - { image: ubuntu-22.04, go: '1.21', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.20', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.19', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.18', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.17', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.16', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.15', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.14', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
+          - { image: ubuntu-22.04, go: '1.13', apt: libgtk-3-dev libwebkit2gtk-4.1-dev }
           - { image: windows-2022, go: '1.22' }
+          - { image: windows-2022, go: '1.21' }
           # Go 1.20 is the earliest version that is usable in this environment as of 2024-08-31.
           # Compilation fails with older versions:
           # [...]/bin/ld.exe: [...]\go-link-3209855222\000008.o: in function `x_cgo_thread_start':
