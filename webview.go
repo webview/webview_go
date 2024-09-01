@@ -31,6 +31,7 @@ import (
 	_ "github.com/webview/webview_go/libs/webview/include"
 	"encoding/json"
 	"errors"
+	"image"
 	"reflect"
 	"runtime"
 	"sync"
@@ -41,6 +42,15 @@ func init() {
 	// Ensure that main.main is called from the main thread
 	runtime.LockOSThread()
 }
+
+// IconKind is used to specify usage of icon.
+type IconKind int
+
+const (
+	IconKindDefault = IconKind(iota)
+	IconKindSmaller
+	maxIconKind
+)
 
 // Hints are used to configure window sizing and resizing
 type Hint int
@@ -81,6 +91,10 @@ type WebView interface {
 	// pointer is GtkWindow pointer, when using Cocoa backend the pointer is
 	// NSWindow pointer, when using Win32 backend the pointer is HWND pointer.
 	Window() unsafe.Pointer
+
+	// SetIcon updates the icon of the native window. Must be called from the UI
+	// thread.
+	SetIcon(icon image.Image, kind IconKind)
 
 	// SetTitle updates the title of the native window. Must be called from the UI
 	// thread.
@@ -126,6 +140,7 @@ type WebView interface {
 
 type webview struct {
 	w C.webview_t
+	i icons
 }
 
 var (
@@ -160,6 +175,7 @@ func NewWindow(debug bool, window unsafe.Pointer) WebView {
 
 func (w *webview) Destroy() {
 	C.webview_destroy(w.w)
+	w.i.free()
 }
 
 func (w *webview) Run() {
@@ -184,6 +200,10 @@ func (w *webview) SetHtml(html string) {
 	s := C.CString(html)
 	defer C.free(unsafe.Pointer(s))
 	C.webview_set_html(w.w, s)
+}
+
+func (w *webview) SetIcon(icon image.Image, kind IconKind) {
+	w.i.setIcon(w.Window(), icon, kind)
 }
 
 func (w *webview) SetTitle(title string) {
