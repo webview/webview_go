@@ -86,6 +86,9 @@ type WebView interface {
 	// thread.
 	SetTitle(title string)
 
+	// SetTitleBar show or hide title bar
+	SetTitleBar(b bool)
+
 	// SetSize updates native window size. See Hint constants.
 	SetSize(w int, h int, hint Hint)
 
@@ -193,6 +196,10 @@ func (w *webview) SetTitle(title string) {
 	s := C.CString(title)
 	defer C.free(unsafe.Pointer(s))
 	C.webview_set_title(w.w, s)
+}
+
+func (w *webview) SetTitleBar(b bool) {
+	C.webview_set_title_bar(w.w, boolToInt(b))
 }
 
 func (w *webview) SetSize(width int, height int, hint Hint) {

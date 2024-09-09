@@ -255,6 +255,14 @@ WEBVIEW_API void *webview_get_native_handle(webview_t w,
 WEBVIEW_API void webview_set_title(webview_t w, const char *title);
 
 /**
+ * Updates the title bar of the native window.
+ *
+ * @param w The webview instance.
+ * @param title The title bar Show or hide.
+ */
+WEBVIEW_API void webview_set_title_bar(webview_t w, int b);
+
+/**
  * Updates the size of the native window.
  *
  * @param w The webview instance.
@@ -1008,6 +1016,7 @@ if (status === 0) {\
   void terminate() { terminate_impl(); }
   void dispatch(std::function<void()> f) { dispatch_impl(f); }
   void set_title(const std::string &title) { set_title_impl(title); }
+  void set_title_bar(int b) { set_title_bar_impl(b); }
 
   void set_size(int width, int height, webview_hint_t hints) {
     set_size_impl(width, height, hints);
@@ -1030,6 +1039,7 @@ protected:
   virtual void terminate_impl() = 0;
   virtual void dispatch_impl(std::function<void()> f) = 0;
   virtual void set_title_impl(const std::string &title) = 0;
+  virtual void set_title_bar_impl(int b) = 0;
   virtual void set_size_impl(int width, int height, webview_hint_t hints) = 0;
   virtual void start_dragging_impl() = 0;
   virtual void set_html_impl(const std::string &html) = 0;
@@ -1346,6 +1356,8 @@ public:
   void set_title_impl(const std::string &title) override {
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
+
+  void set_title_bar_impl(int b) override {}
 
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     gtk_window_set_resizable(GTK_WINDOW(m_window), hints != WEBVIEW_HINT_FIXED);
@@ -1668,6 +1680,9 @@ public:
                                             "stringWithUTF8String:"_sel,
                                             title.c_str()));
   }
+
+  void set_title_bar_impl(int b) override {}
+
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     objc::autoreleasepool arp;
 
@@ -3277,6 +3292,19 @@ public:
     SetWindowTextW(m_window, widen_string(title).c_str());
   }
 
+
+  void set_title_bar_impl(int b) override {
+    auto style = GetWindowLong(m_window, GWL_STYLE);
+    if (b == 0){
+        style &= ~(WS_CAPTION);
+    }else{
+        style |= (WS_CAPTION);
+    }
+    SetWindowLong(m_window, GWL_STYLE, style);
+    SetWindowPos(m_window, nullptr, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+  }
+
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     auto style = GetWindowLong(m_window, GWL_STYLE);
     if (hints == WEBVIEW_HINT_FIXED) {
@@ -3284,11 +3312,6 @@ public:
     } else {
       style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
     }
-
-    //ADD ++++ 去掉标题栏
-    //style &= ~WS_CAPTION;
-    style &= ~ (WS_CAPTION);
-    //ADD ====
 
     SetWindowLong(m_window, GWL_STYLE, style);
 
@@ -3570,6 +3593,11 @@ WEBVIEW_API void *webview_get_native_handle(webview_t w,
 
 WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
   static_cast<webview::webview *>(w)->set_title(title);
+}
+
+
+WEBVIEW_API void webview_set_title_bar(webview_t w, int b) {
+  static_cast<webview::webview *>(w)->set_title_bar(b);
 }
 
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
