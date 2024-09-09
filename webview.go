@@ -25,12 +25,12 @@ void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
+	"encoding/json"
+	"errors"
 	_ "github.com/webview/webview_go/libs/mswebview2"
 	_ "github.com/webview/webview_go/libs/mswebview2/include"
 	_ "github.com/webview/webview_go/libs/webview"
 	_ "github.com/webview/webview_go/libs/webview/include"
-	"encoding/json"
-	"errors"
 	"reflect"
 	"runtime"
 	"sync"
@@ -88,6 +88,9 @@ type WebView interface {
 
 	// SetSize updates native window size. See Hint constants.
 	SetSize(w int, h int, hint Hint)
+
+	// StartDragging Drag native window.
+	StartDragging()
 
 	// Navigate navigates webview to the given URL. URL may be a properly encoded data.
 	// URI. Examples:
@@ -194,6 +197,10 @@ func (w *webview) SetTitle(title string) {
 
 func (w *webview) SetSize(width int, height int, hint Hint) {
 	C.webview_set_size(w.w, C.int(width), C.int(height), C.webview_hint_t(hint))
+}
+
+func (w *webview) StartDragging() {
+	C.webview_start_dragging(w.w)
 }
 
 func (w *webview) Init(js string) {

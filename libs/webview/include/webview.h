@@ -266,6 +266,13 @@ WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints);
 
 /**
+ * Updates the drag of the native window.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_start_dragging(webview_t w);
+
+/**
  * Navigates webview to the given URL. URL may be a properly encoded data URI.
  *
  * Example:
@@ -1006,6 +1013,10 @@ if (status === 0) {\
     set_size_impl(width, height, hints);
   }
 
+  void start_dragging() {
+    start_dragging_impl();
+  }
+
   void set_html(const std::string &html) { set_html_impl(html); }
   void init(const std::string &js) { init_impl(js); }
   void eval(const std::string &js) { eval_impl(js); }
@@ -1020,6 +1031,7 @@ protected:
   virtual void dispatch_impl(std::function<void()> f) = 0;
   virtual void set_title_impl(const std::string &title) = 0;
   virtual void set_size_impl(int width, int height, webview_hint_t hints) = 0;
+  virtual void start_dragging_impl() = 0;
   virtual void set_html_impl(const std::string &html) = 0;
   virtual void init_impl(const std::string &js) = 0;
   virtual void eval_impl(const std::string &js) = 0;
@@ -1351,6 +1363,7 @@ public:
       gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
     }
   }
+  void start_dragging_impl() override {}
 
   void navigate_impl(const std::string &url) override {
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
@@ -1679,6 +1692,7 @@ public:
     }
     objc::msg_send<void>(m_window, "center"_sel);
   }
+  void start_dragging_impl() override {}
   void navigate_impl(const std::string &url) override {
     objc::autoreleasepool arp;
 
@@ -3270,6 +3284,12 @@ public:
     } else {
       style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
     }
+
+    //ADD ++++ 去掉标题栏
+    //style &= ~WS_CAPTION;
+    style &= ~ (WS_CAPTION);
+    //ADD ====
+
     SetWindowLong(m_window, GWL_STYLE, style);
 
     if (hints == WEBVIEW_HINT_MAX) {
@@ -3289,6 +3309,11 @@ public:
                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE |
                        SWP_FRAMECHANGED);
     }
+  }
+
+  void start_dragging_impl() override {
+    ReleaseCapture();
+    SendMessage(m_window, WM_SYSCOMMAND, SC_MOVE| HTCAPTION, 0);
   }
 
   void navigate_impl(const std::string &url) override {
@@ -3550,6 +3575,10 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints) {
   static_cast<webview::webview *>(w)->set_size(width, height, hints);
+}
+
+WEBVIEW_API void webview_start_dragging(webview_t w) {
+  static_cast<webview::webview *>(w)->start_dragging();
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {
