@@ -95,6 +95,9 @@ type WebView interface {
 	// StartDragging Drag native window.
 	StartDragging()
 
+	// SetAlwaysOnTop set always on top native window.
+	SetAlwaysOnTop()
+
 	// Navigate navigates webview to the given URL. URL may be a properly encoded data.
 	// URI. Examples:
 	// w.Navigate("https://github.com/webview/webview")
