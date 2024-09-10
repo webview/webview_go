@@ -210,6 +210,10 @@ func (w *webview) StartDragging() {
 	C.webview_start_dragging(w.w)
 }
 
+func (w *webview) SetAlwaysOnTop() {
+	C.webview_set_always_on_top(w.w)
+}
+
 func (w *webview) Init(js string) {
 	s := C.CString(js)
 	defer C.free(unsafe.Pointer(s))
