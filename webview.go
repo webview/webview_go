@@ -96,7 +96,7 @@ type WebView interface {
 	StartDragging()
 
 	// SetAlwaysOnTop set always on top native window.
-	SetAlwaysOnTop()
+	SetAlwaysOnTop(b bool)
 
 	// Navigate navigates webview to the given URL. URL may be a properly encoded data.
 	// URI. Examples:
@@ -213,8 +213,8 @@ func (w *webview) StartDragging() {
 	C.webview_start_dragging(w.w)
 }
 
-func (w *webview) SetAlwaysOnTop() {
-	C.webview_set_always_on_top(w.w)
+func (w *webview) SetAlwaysOnTop(b bool) {
+	C.webview_set_always_on_top(w.w, boolToInt(b))
 }
 
 func (w *webview) Init(js string) {

@@ -285,7 +285,7 @@ WEBVIEW_API void webview_start_dragging(webview_t w);
  *
  * @param w The webview instance.
  */
-WEBVIEW_API void webview_set_always_on_top(webview_t w);
+WEBVIEW_API void webview_set_always_on_top(webview_t w,int b);
 
 /**
  * Navigates webview to the given URL. URL may be a properly encoded data URI.
@@ -1033,8 +1033,8 @@ if (status === 0) {\
     start_dragging_impl();
   }
 
-  void set_always_on_top() {
-    set_always_on_top_impl();
+  void set_always_on_top(int b) {
+    set_always_on_top_impl(b);
   }
 
   void set_html(const std::string &html) { set_html_impl(html); }
@@ -1053,7 +1053,7 @@ protected:
   virtual void set_title_bar_impl(int b) = 0;
   virtual void set_size_impl(int width, int height, webview_hint_t hints) = 0;
   virtual void start_dragging_impl() = 0;
-  virtual void set_always_on_top_impl() = 0;
+  virtual void set_always_on_top_impl(int b) = 0;
   virtual void set_html_impl(const std::string &html) = 0;
   virtual void init_impl(const std::string &js) = 0;
   virtual void eval_impl(const std::string &js) = 0;
@@ -1389,7 +1389,7 @@ public:
   }
   void start_dragging_impl() override {}
 
-  void set_always_on_top_impl() override {}
+  void set_always_on_top_impl(int b) override {}
 
   void navigate_impl(const std::string &url) override {
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
@@ -1722,7 +1722,7 @@ public:
     objc::msg_send<void>(m_window, "center"_sel);
   }
   void start_dragging_impl() override {}
-  void set_always_on_top_impl() override {}
+  void set_always_on_top_impl(int b) override {}
   void navigate_impl(const std::string &url) override {
     objc::autoreleasepool arp;
 
@@ -3354,8 +3354,8 @@ public:
     SendMessage(m_window, WM_SYSCOMMAND, SC_MOVE| HTCAPTION, 0);
   }
 
-  void set_always_on_top_impl() override {
-    SetWindowPos(m_window, HWND_TOPMOST,0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+  void set_always_on_top_impl(int b) override {
+    SetWindowPos(m_window, b == 0 ? HWND_NOTOPMOST : HWND_TOPMOST,0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
   }
 
   void navigate_impl(const std::string &url) override {
@@ -3628,8 +3628,8 @@ WEBVIEW_API void webview_start_dragging(webview_t w) {
   static_cast<webview::webview *>(w)->start_dragging();
 }
 
-WEBVIEW_API void webview_set_always_on_top(webview_t w) {
-  static_cast<webview::webview *>(w)->set_always_on_top();
+WEBVIEW_API void webview_set_always_on_top(webview_t w, int b) {
+  static_cast<webview::webview *>(w)->set_always_on_top(b);
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {
