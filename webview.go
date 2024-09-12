@@ -25,12 +25,12 @@ void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
+	"encoding/json"
+	"errors"
 	_ "github.com/webview/webview_go/libs/mswebview2"
 	_ "github.com/webview/webview_go/libs/mswebview2/include"
 	_ "github.com/webview/webview_go/libs/webview"
 	_ "github.com/webview/webview_go/libs/webview/include"
-	"encoding/json"
-	"errors"
 	"reflect"
 	"runtime"
 	"sync"
@@ -86,8 +86,29 @@ type WebView interface {
 	// thread.
 	SetTitle(title string)
 
+	// SetTitleBar show or hide title bar
+	SetTitleBar(b bool)
+
+	// SetMaximize set native window maximize
+	SetMaximize()
+
+	// SetUnMaximize set native window unmaximize
+	SetUnMaximize()
+
+	// SetMinimize set native window minimize
+	SetMinimize()
+
 	// SetSize updates native window size. See Hint constants.
 	SetSize(w int, h int, hint Hint)
+
+	// StartDragging Drag native window.
+	StartDragging()
+
+	// SetAlwaysOnTop set always on top native window.
+	SetAlwaysOnTop(b bool)
+
+	// SetResizable set resizable native window.
+	SetResizable(b bool)
 
 	// Navigate navigates webview to the given URL. URL may be a properly encoded data.
 	// URI. Examples:
@@ -192,8 +213,36 @@ func (w *webview) SetTitle(title string) {
 	C.webview_set_title(w.w, s)
 }
 
+func (w *webview) SetTitleBar(b bool) {
+	C.webview_set_title_bar(w.w, boolToInt(b))
+}
+
+func (w *webview) SetMaximize() {
+	C.webview_set_maximize(w.w)
+}
+
+func (w *webview) SetUnMaximize() {
+	C.webview_set_un_maximize(w.w)
+}
+
+func (w *webview) SetMinimize() {
+	C.webview_set_minimize(w.w)
+}
+
 func (w *webview) SetSize(width int, height int, hint Hint) {
 	C.webview_set_size(w.w, C.int(width), C.int(height), C.webview_hint_t(hint))
+}
+
+func (w *webview) StartDragging() {
+	C.webview_start_dragging(w.w)
+}
+
+func (w *webview) SetAlwaysOnTop(b bool) {
+	C.webview_set_always_on_top(w.w, boolToInt(b))
+}
+
+func (w *webview) SetResizable(b bool) {
+	C.webview_set_resizable(w.w, boolToInt(b))
 }
 
 func (w *webview) Init(js string) {

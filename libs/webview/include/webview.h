@@ -255,6 +255,35 @@ WEBVIEW_API void *webview_get_native_handle(webview_t w,
 WEBVIEW_API void webview_set_title(webview_t w, const char *title);
 
 /**
+ * Updates the title bar of the native window.
+ *
+ * @param w The webview instance.
+ * @param title The title bar Show or hide.
+ */
+WEBVIEW_API void webview_set_title_bar(webview_t w, int b);
+
+/**
+ * Set the native window maximize.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_set_maximize(webview_t w);
+
+/**
+ * Set the native window un maximize.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_set_un_maximize(webview_t w);
+
+/**
+ * Set the native window minimize.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_set_minimize(webview_t w);
+
+/**
  * Updates the size of the native window.
  *
  * @param w The webview instance.
@@ -264,6 +293,28 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title);
  */
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints);
+
+/**
+ * Updates the drag of the native window.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_start_dragging(webview_t w);
+
+/**
+ * Set Always On Top of the native window.
+ *
+ * @param w The webview instance.
+ * @param b bool.
+ */
+WEBVIEW_API void webview_set_always_on_top(webview_t w,int b);
+/**
+ * Set Always On Top of the native window.
+ *
+ * @param w The webview instance.
+ * @param b bool.
+ */
+WEBVIEW_API void webview_set_resizable(webview_t w,int b);
 
 /**
  * Navigates webview to the given URL. URL may be a properly encoded data URI.
@@ -1001,9 +1052,25 @@ if (status === 0) {\
   void terminate() { terminate_impl(); }
   void dispatch(std::function<void()> f) { dispatch_impl(f); }
   void set_title(const std::string &title) { set_title_impl(title); }
+  void set_title_bar(int b) { set_title_bar_impl(b); }
+  void set_maximize() { set_maximize_impl(); }
+  void set_un_maximize() { set_un_maximize_impl(); }
+  void set_minimize() { set_minimize_impl(); }
 
   void set_size(int width, int height, webview_hint_t hints) {
     set_size_impl(width, height, hints);
+  }
+
+  void start_dragging() {
+    start_dragging_impl();
+  }
+
+  void set_always_on_top(int b) {
+    set_always_on_top_impl(b);
+  }
+
+  void set_resizable(int b) {
+    set_resizable_impl(b);
   }
 
   void set_html(const std::string &html) { set_html_impl(html); }
@@ -1019,7 +1086,14 @@ protected:
   virtual void terminate_impl() = 0;
   virtual void dispatch_impl(std::function<void()> f) = 0;
   virtual void set_title_impl(const std::string &title) = 0;
+  virtual void set_title_bar_impl(int b) = 0;
+  virtual void set_maximize_impl() = 0;
+  virtual void set_un_maximize_impl() = 0;
+  virtual void set_minimize_impl() = 0;
   virtual void set_size_impl(int width, int height, webview_hint_t hints) = 0;
+  virtual void start_dragging_impl() = 0;
+  virtual void set_always_on_top_impl(int b) = 0;
+  virtual void set_resizable_impl(int b) = 0;
   virtual void set_html_impl(const std::string &html) = 0;
   virtual void init_impl(const std::string &js) = 0;
   virtual void eval_impl(const std::string &js) = 0;
@@ -1335,6 +1409,14 @@ public:
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
 
+  void set_title_bar_impl(int b) override {}
+
+  void set_maximize_impl() override {}
+
+  void set_un_maximize_impl() override {}
+
+  void set_minimize_impl() override {}
+
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     gtk_window_set_resizable(GTK_WINDOW(m_window), hints != WEBVIEW_HINT_FIXED);
     if (hints == WEBVIEW_HINT_NONE) {
@@ -1351,6 +1433,10 @@ public:
       gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
     }
   }
+  void start_dragging_impl() override {}
+
+  void set_always_on_top_impl(int b) override {}
+  void set_resizable_impl(int b) override {}
 
   void navigate_impl(const std::string &url) override {
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
@@ -1655,6 +1741,15 @@ public:
                                             "stringWithUTF8String:"_sel,
                                             title.c_str()));
   }
+
+  void set_title_bar_impl(int b) override {}
+
+  void set_maximize_impl() override {}
+
+  void set_un_maximize_impl() override {}
+
+  void set_minimize_impl() override {}
+
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     objc::autoreleasepool arp;
 
@@ -1679,6 +1774,9 @@ public:
     }
     objc::msg_send<void>(m_window, "center"_sel);
   }
+  void start_dragging_impl() override {}
+  void set_always_on_top_impl(int b) override {}
+  void set_resizable_impl(int b) override {}
   void navigate_impl(const std::string &url) override {
     objc::autoreleasepool arp;
 
@@ -3263,6 +3361,31 @@ public:
     SetWindowTextW(m_window, widen_string(title).c_str());
   }
 
+
+  void set_title_bar_impl(int b) override {
+    auto style = GetWindowLong(m_window, GWL_STYLE);
+    if (b == 0){
+        style &= ~WS_CAPTION;
+    }else{
+        style |= WS_CAPTION;
+    }
+    SetWindowLong(m_window, GWL_STYLE, style);
+    SetWindowPos(m_window, nullptr, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+  }
+
+  void set_maximize_impl() override {
+    PostMessage(m_window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+  }
+
+  void set_un_maximize_impl() override {
+    PostMessage(m_window, WM_SYSCOMMAND, SC_RESTORE, 0);
+  }
+
+  void set_minimize_impl() override {
+    PostMessage(m_window, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+  }
+
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     auto style = GetWindowLong(m_window, GWL_STYLE);
     if (hints == WEBVIEW_HINT_FIXED) {
@@ -3270,6 +3393,7 @@ public:
     } else {
       style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
     }
+
     SetWindowLong(m_window, GWL_STYLE, style);
 
     if (hints == WEBVIEW_HINT_MAX) {
@@ -3289,6 +3413,25 @@ public:
                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE |
                        SWP_FRAMECHANGED);
     }
+  }
+
+  void start_dragging_impl() override {
+    ReleaseCapture();
+    SendMessage(m_window, WM_SYSCOMMAND, SC_MOVE| HTCAPTION, 0);
+  }
+
+  void set_always_on_top_impl(int b) override {
+    SetWindowPos(m_window, b == 0 ? HWND_NOTOPMOST : HWND_TOPMOST,0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+  }
+
+  void set_resizable_impl(int b) override {
+    auto style = GetWindowLong(m_window, GWL_STYLE);
+    if (b == 0) {
+      style &= ~WS_THICKFRAME;
+    } else {
+      style |= WS_THICKFRAME;
+    }
+    ::SetWindowLong(m_window, GWL_STYLE, style);
   }
 
   void navigate_impl(const std::string &url) override {
@@ -3547,9 +3690,37 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
   static_cast<webview::webview *>(w)->set_title(title);
 }
 
+
+WEBVIEW_API void webview_set_title_bar(webview_t w, int b) {
+  static_cast<webview::webview *>(w)->set_title_bar(b);
+}
+
+WEBVIEW_API void webview_set_maximize(webview_t w) {
+  static_cast<webview::webview *>(w)->set_maximize();
+}
+
+WEBVIEW_API void webview_set_un_maximize(webview_t w) {
+  static_cast<webview::webview *>(w)->set_un_maximize();
+}
+
+WEBVIEW_API void webview_set_minimize(webview_t w) {
+  static_cast<webview::webview *>(w)->set_minimize();
+}
+
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints) {
   static_cast<webview::webview *>(w)->set_size(width, height, hints);
+}
+
+WEBVIEW_API void webview_start_dragging(webview_t w) {
+  static_cast<webview::webview *>(w)->start_dragging();
+}
+
+WEBVIEW_API void webview_set_always_on_top(webview_t w, int b) {
+  static_cast<webview::webview *>(w)->set_always_on_top(b);
+}
+WEBVIEW_API void webview_set_resizable(webview_t w, int b) {
+  static_cast<webview::webview *>(w)->set_resizable(b);
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {
