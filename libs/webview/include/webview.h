@@ -3426,7 +3426,7 @@ public:
 
   void set_resizable_impl(int b) override {
     auto style = GetWindowLong(m_window, GWL_STYLE);
-    if (is_resizable_ == 0) {
+    if (b == 0) {
       style &= ~WS_THICKFRAME;
     } else {
       style |= WS_THICKFRAME;
