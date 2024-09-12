@@ -305,8 +305,16 @@ WEBVIEW_API void webview_start_dragging(webview_t w);
  * Set Always On Top of the native window.
  *
  * @param w The webview instance.
+ * @param b bool.
  */
 WEBVIEW_API void webview_set_always_on_top(webview_t w,int b);
+/**
+ * Set Always On Top of the native window.
+ *
+ * @param w The webview instance.
+ * @param b bool.
+ */
+WEBVIEW_API void webview_set_resizable(webview_t w,int b);
 
 /**
  * Navigates webview to the given URL. URL may be a properly encoded data URI.
@@ -1061,6 +1069,10 @@ if (status === 0) {\
     set_always_on_top_impl(b);
   }
 
+  void set_resizable(int b) {
+    set_resizable_impl(b);
+  }
+
   void set_html(const std::string &html) { set_html_impl(html); }
   void init(const std::string &js) { init_impl(js); }
   void eval(const std::string &js) { eval_impl(js); }
@@ -1081,6 +1093,7 @@ protected:
   virtual void set_size_impl(int width, int height, webview_hint_t hints) = 0;
   virtual void start_dragging_impl() = 0;
   virtual void set_always_on_top_impl(int b) = 0;
+  virtual void set_resizable_impl(int b) = 0;
   virtual void set_html_impl(const std::string &html) = 0;
   virtual void init_impl(const std::string &js) = 0;
   virtual void eval_impl(const std::string &js) = 0;
@@ -1423,6 +1436,7 @@ public:
   void start_dragging_impl() override {}
 
   void set_always_on_top_impl(int b) override {}
+  void set_resizable_impl(int b) override {}
 
   void navigate_impl(const std::string &url) override {
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
@@ -1762,6 +1776,7 @@ public:
   }
   void start_dragging_impl() override {}
   void set_always_on_top_impl(int b) override {}
+  void set_resizable_impl(int b) override {}
   void navigate_impl(const std::string &url) override {
     objc::autoreleasepool arp;
 
@@ -3350,9 +3365,9 @@ public:
   void set_title_bar_impl(int b) override {
     auto style = GetWindowLong(m_window, GWL_STYLE);
     if (b == 0){
-        style &= ~(WS_CAPTION);
+        style &= ~WS_CAPTION;
     }else{
-        style |= (WS_CAPTION);
+        style |= WS_CAPTION;
     }
     SetWindowLong(m_window, GWL_STYLE, style);
     SetWindowPos(m_window, nullptr, 0, 0, 0, 0,
@@ -3407,6 +3422,16 @@ public:
 
   void set_always_on_top_impl(int b) override {
     SetWindowPos(m_window, b == 0 ? HWND_NOTOPMOST : HWND_TOPMOST,0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+  }
+
+  void set_resizable_impl(int b) override {
+    auto style = GetWindowLong(m_window, GWL_STYLE);
+    if (is_resizable_ == 0) {
+      style &= ~WS_THICKFRAME;
+    } else {
+      style |= WS_THICKFRAME;
+    }
+    ::SetWindowLong(m_window, GWL_STYLE, style);
   }
 
   void navigate_impl(const std::string &url) override {
@@ -3693,6 +3718,9 @@ WEBVIEW_API void webview_start_dragging(webview_t w) {
 
 WEBVIEW_API void webview_set_always_on_top(webview_t w, int b) {
   static_cast<webview::webview *>(w)->set_always_on_top(b);
+}
+WEBVIEW_API void webview_set_resizable(webview_t w, int b) {
+  static_cast<webview::webview *>(w)->set_resizable(b);
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {

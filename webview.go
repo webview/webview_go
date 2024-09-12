@@ -107,6 +107,9 @@ type WebView interface {
 	// SetAlwaysOnTop set always on top native window.
 	SetAlwaysOnTop(b bool)
 
+	// SetResizable set resizable native window.
+	SetResizable(b bool)
+
 	// Navigate navigates webview to the given URL. URL may be a properly encoded data.
 	// URI. Examples:
 	// w.Navigate("https://github.com/webview/webview")
@@ -236,6 +239,10 @@ func (w *webview) StartDragging() {
 
 func (w *webview) SetAlwaysOnTop(b bool) {
 	C.webview_set_always_on_top(w.w, boolToInt(b))
+}
+
+func (w *webview) SetResizable(b bool) {
+	C.webview_set_resizable(w.w, boolToInt(b))
 }
 
 func (w *webview) Init(js string) {
