@@ -89,6 +89,15 @@ type WebView interface {
 	// SetTitleBar show or hide title bar
 	SetTitleBar(b bool)
 
+	// SetMaximize set native window maximize
+	SetMaximize()
+
+	// SetUnMaximize set native window unmaximize
+	SetUnMaximize()
+
+	// SetMinimize set native window minimize
+	SetMinimize()
+
 	// SetSize updates native window size. See Hint constants.
 	SetSize(w int, h int, hint Hint)
 
@@ -203,6 +212,18 @@ func (w *webview) SetTitle(title string) {
 
 func (w *webview) SetTitleBar(b bool) {
 	C.webview_set_title_bar(w.w, boolToInt(b))
+}
+
+func (w *webview) SetMaximize() {
+	C.webview_set_maximize(w.w)
+}
+
+func (w *webview) SetUnMaximize() {
+	C.webview_set_un_maximize(w.w)
+}
+
+func (w *webview) SetMinimize() {
+	C.webview_set_minimize(w.w)
 }
 
 func (w *webview) SetSize(width int, height int, hint Hint) {

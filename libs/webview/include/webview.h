@@ -263,6 +263,27 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title);
 WEBVIEW_API void webview_set_title_bar(webview_t w, int b);
 
 /**
+ * Set the native window maximize.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_set_maximize(webview_t w);
+
+/**
+ * Set the native window un maximize.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_set_un_maximize(webview_t w);
+
+/**
+ * Set the native window minimize.
+ *
+ * @param w The webview instance.
+ */
+WEBVIEW_API void webview_set_minimize(webview_t w);
+
+/**
  * Updates the size of the native window.
  *
  * @param w The webview instance.
@@ -1024,6 +1045,9 @@ if (status === 0) {\
   void dispatch(std::function<void()> f) { dispatch_impl(f); }
   void set_title(const std::string &title) { set_title_impl(title); }
   void set_title_bar(int b) { set_title_bar_impl(b); }
+  void set_maximize() { set_maximize_impl(); }
+  void set_un_maximize() { set_un_maximize_impl(); }
+  void set_minimize() { set_minimize_impl(); }
 
   void set_size(int width, int height, webview_hint_t hints) {
     set_size_impl(width, height, hints);
@@ -1051,6 +1075,9 @@ protected:
   virtual void dispatch_impl(std::function<void()> f) = 0;
   virtual void set_title_impl(const std::string &title) = 0;
   virtual void set_title_bar_impl(int b) = 0;
+  virtual void set_maximize_impl() = 0;
+  virtual void set_un_maximize_impl() = 0;
+  virtual void set_minimize_impl() = 0;
   virtual void set_size_impl(int width, int height, webview_hint_t hints) = 0;
   virtual void start_dragging_impl() = 0;
   virtual void set_always_on_top_impl(int b) = 0;
@@ -1370,6 +1397,12 @@ public:
   }
 
   void set_title_bar_impl(int b) override {}
+
+  void set_maximize_impl() override {}
+
+  void set_un_maximize_impl() override {}
+
+  void set_minimize_impl() override {}
 
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     gtk_window_set_resizable(GTK_WINDOW(m_window), hints != WEBVIEW_HINT_FIXED);
@@ -1696,6 +1729,12 @@ public:
   }
 
   void set_title_bar_impl(int b) override {}
+
+  void set_maximize_impl() override {}
+
+  void set_un_maximize_impl() override {}
+
+  void set_minimize_impl() override {}
 
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     objc::autoreleasepool arp;
@@ -3320,6 +3359,21 @@ public:
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
   }
 
+  void set_maximize_impl() override {
+    ShowWindow(m_widget, SW_MAXIMIZE);
+    UpdateWindow(m_widget);
+  }
+
+  void set_un_maximize_impl() override {
+    ShowWindow(m_widget, SW_RESTORE);
+    UpdateWindow(m_widget);
+  }
+
+  void set_minimize_impl() override {
+    ShowWindow(m_widget, SW_MINIMIZE);
+    UpdateWindow(m_widget);
+  }
+
   void set_size_impl(int width, int height, webview_hint_t hints) override {
     auto style = GetWindowLong(m_window, GWL_STYLE);
     if (hints == WEBVIEW_HINT_FIXED) {
@@ -3617,6 +3671,18 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
 
 WEBVIEW_API void webview_set_title_bar(webview_t w, int b) {
   static_cast<webview::webview *>(w)->set_title_bar(b);
+}
+
+WEBVIEW_API void webview_set_maximize(webview_t w) {
+  static_cast<webview::webview *>(w)->set_maximize();
+}
+
+WEBVIEW_API void webview_set_un_maximize(webview_t w) {
+  static_cast<webview::webview *>(w)->set_un_maximize();
+}
+
+WEBVIEW_API void webview_set_minimize(webview_t w) {
+  static_cast<webview::webview *>(w)->set_minimize();
 }
 
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
