@@ -3364,11 +3364,11 @@ public:
   }
 
   void set_un_maximize_impl() override {
-    PostMessage(mainWindow, WM_SYSCOMMAND, SC_RESTORE, 0);
+    PostMessage(m_window, WM_SYSCOMMAND, SC_RESTORE, 0);
   }
 
   void set_minimize_impl() override {
-    PostMessage(mainWindow, WM_SYSCOMMAND, SW_MINIMIZE, 0);
+    PostMessage(m_window, WM_SYSCOMMAND, SW_MINIMIZE, 0);
   }
 
   void set_size_impl(int width, int height, webview_hint_t hints) override {
