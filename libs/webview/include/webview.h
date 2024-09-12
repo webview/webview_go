@@ -3360,18 +3360,18 @@ public:
   }
 
   void set_maximize_impl() override {
-    ShowWindow(m_widget, SW_MAXIMIZE);
-    UpdateWindow(m_widget);
+    ShowWindow(m_window, SW_MAXIMIZE);
+    UpdateWindow(m_window);
   }
 
   void set_un_maximize_impl() override {
-    ShowWindow(m_widget, SW_RESTORE);
-    UpdateWindow(m_widget);
+    ShowWindow(m_window, SW_RESTORE);
+    UpdateWindow(m_window);
   }
 
   void set_minimize_impl() override {
-    ShowWindow(m_widget, SW_MINIMIZE);
-    UpdateWindow(m_widget);
+    ShowWindow(m_window, SW_MINIMIZE);
+    UpdateWindow(m_window);
   }
 
   void set_size_impl(int width, int height, webview_hint_t hints) override {
