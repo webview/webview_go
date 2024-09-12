@@ -3368,7 +3368,7 @@ public:
   }
 
   void set_minimize_impl() override {
-    PostMessage(m_window, WM_SYSCOMMAND, SW_MINIMIZE, 0);
+    PostMessage(m_window, WM_SYSCOMMAND, SC_MINIMIZE, 0);
   }
 
   void set_size_impl(int width, int height, webview_hint_t hints) override {
