@@ -59,6 +59,13 @@ const (
 	HintMax = C.WEBVIEW_HINT_MAX
 )
 
+type NativeHandleKind = C.webview_native_handle_kind_t
+const (
+    NativeHandleWindow NativeHandleKind = iota
+    NativeHandleWidget
+    NativeHandleBrowserController
+)
+
 type WebView interface {
 
 	// Run runs the main loop until it's terminated. After this function exits -
@@ -81,6 +88,9 @@ type WebView interface {
 	// pointer is GtkWindow pointer, when using Cocoa backend the pointer is
 	// NSWindow pointer, when using Win32 backend the pointer is HWND pointer.
 	Window() unsafe.Pointer
+
+    // NativeHandle returns a native handle based on the kind requested.
+    NativeHandle(NativeHandleKind) unsafe.Pointer
 
 	// SetTitle updates the title of the native window. Must be called from the UI
 	// thread.
@@ -156,6 +166,10 @@ func NewWindow(debug bool, window unsafe.Pointer) WebView {
 	w := &webview{}
 	w.w = C.webview_create(boolToInt(debug), window)
 	return w
+}
+
+func (w *webview) NativeHandle(kind NativeHandleKind) unsafe.Pointer {
+    return C.webview_get_native_handle(w.w, kind)
 }
 
 func (w *webview) Destroy() {
