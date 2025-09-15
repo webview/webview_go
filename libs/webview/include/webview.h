@@ -265,6 +265,13 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title);
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints);
 
+/** 
+ * @param w The webview instance.
+ * @param user_agent The new user agent.
+*/
+
+WEBVIEW_API void webview_set_user_agent(webview_t w, const char *user_agent);
+
 /**
  * Navigates webview to the given URL. URL may be a properly encoded data URI.
  *
@@ -1010,6 +1017,8 @@ if (status === 0) {\
   void init(const std::string &js) { init_impl(js); }
   void eval(const std::string &js) { eval_impl(js); }
 
+  void set_user_agent(const std::string &ua) { set_user_agent_impl(ua); }
+
 protected:
   virtual void navigate_impl(const std::string &url) = 0;
   virtual void *window_impl() = 0;
@@ -1023,6 +1032,7 @@ protected:
   virtual void set_html_impl(const std::string &html) = 0;
   virtual void init_impl(const std::string &js) = 0;
   virtual void eval_impl(const std::string &js) = 0;
+  virtual void set_user_agent_impl(const std::string &ua) = 0;
 
   virtual void on_message(const std::string &msg) {
     auto seq = json_parse(msg, "id", 0);
@@ -1351,6 +1361,16 @@ public:
       gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
     }
   }
+
+  void set_user_agent_impl(const std::string &ua) override {
+  if (!m_webview) return;
+
+  WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(m_webview));
+  if (!settings) return;
+
+  webkit_settings_set_user_agent(settings, ua.c_str());
+  webkit_web_view_set_settings(WEBKIT_WEB_VIEW(m_webview), settings);
+}
 
   void navigate_impl(const std::string &url) override {
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
@@ -1717,6 +1737,23 @@ public:
                                             js.c_str()),
                          nullptr);
   }
+
+  void set_user_agent_impl(const std::string &ua) override {
+  objc::autoreleasepool pool;
+
+  if (!m_webview) return;
+
+  id configuration = objc::msg_send<id>(m_webview, "configuration"_sel);
+  if (!configuration) return;
+
+  id uaString = objc::msg_send<id>("NSString"_cls,
+                                   "stringWithUTF8String:"_sel,
+                                   ua.c_str());
+
+  objc::msg_send<void>(configuration,
+                       "setApplicationNameForUserAgent:"_sel,
+                       uaString);
+}
 
 private:
   id create_app_delegate() {
@@ -3550,6 +3587,11 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints) {
   static_cast<webview::webview *>(w)->set_size(width, height, hints);
+}
+
+WEBVIEW_API void webview_set_user_agent(webview_t w, const char *user_agent) {
+  if (!w || !user_agent) return;
+  static_cast<webview::webview *>(w)->set_user_agent(user_agent);
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {
