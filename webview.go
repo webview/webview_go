@@ -25,16 +25,17 @@ void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
-	_ "github.com/webview/webview_go/libs/mswebview2"
-	_ "github.com/webview/webview_go/libs/mswebview2/include"
-	_ "github.com/webview/webview_go/libs/webview"
-	_ "github.com/webview/webview_go/libs/webview/include"
 	"encoding/json"
 	"errors"
 	"reflect"
 	"runtime"
 	"sync"
 	"unsafe"
+
+	_ "github.com/webview/webview_go/libs/mswebview2"
+	_ "github.com/webview/webview_go/libs/mswebview2/include"
+	_ "github.com/webview/webview_go/libs/webview"
+	_ "github.com/webview/webview_go/libs/webview/include"
 )
 
 func init() {
@@ -122,6 +123,9 @@ type WebView interface {
 
 	// Removes a callback that was previously set by Bind.
 	Unbind(name string) error
+
+	// Sets a user agent based on OS
+	SetUserAgent(ua string) error
 }
 
 type webview struct {
@@ -327,5 +331,12 @@ func (w *webview) Unbind(name string) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	C.CgoWebViewUnbind(w.w, cname)
+	return nil
+}
+
+func (w *webview) SetUserAgent(ua string) error {
+	cua := C.CString(ua)
+	defer C.free(unsafe.Pointer(cua))
+	C.webview_set_user_agent(w.w, cua)
 	return nil
 }
