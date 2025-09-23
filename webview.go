@@ -340,7 +340,6 @@ func (w *webview) SetUserAgent(ua string) error {
 	cua := C.CString(ua)
 	defer C.free(unsafe.Pointer(cua))
 
-	// Вызов C API, которое мы добавили в c_api_impl.hh
 	res := C.webview_set_user_agent(w.w, cua)
 	if res != C.WEBVIEW_ERROR_OK {
 		return errors.New("failed to set user agent")
