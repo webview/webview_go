@@ -1,8 +1,8 @@
 package webview
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/libs/webview/include
-#cgo CXXFLAGS: -I${SRCDIR}/libs/webview/include -DWEBVIEW_STATIC
+#cgo CFLAGS: -I${SRCDIR}/libs/macoswebview/include
+#cgo CXXFLAGS: -I${SRCDIR}/libs/macoswebview/include -DWEBVIEW_STATIC
 
 #cgo linux openbsd freebsd netbsd CXXFLAGS: -DWEBVIEW_GTK -std=c++11
 #cgo linux openbsd freebsd netbsd LDFLAGS: -ldl
@@ -25,16 +25,17 @@ void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
-	_ "github.com/webview/webview_go/libs/mswebview2"
-	_ "github.com/webview/webview_go/libs/mswebview2/include"
-	_ "github.com/webview/webview_go/libs/webview"
-	_ "github.com/webview/webview_go/libs/webview/include"
 	"encoding/json"
 	"errors"
 	"reflect"
 	"runtime"
 	"sync"
 	"unsafe"
+
+	_ "github.com/webview/webview_go/libs/mswebview2"
+	_ "github.com/webview/webview_go/libs/mswebview2/include"
+	_ "github.com/webview/webview_go/libs/webview"
+	_ "github.com/webview/webview_go/libs/webview/include"
 )
 
 func init() {
@@ -122,6 +123,8 @@ type WebView interface {
 
 	// Removes a callback that was previously set by Bind.
 	Unbind(name string) error
+
+	SetUserAgent(ua string) error
 }
 
 type webview struct {
@@ -327,5 +330,20 @@ func (w *webview) Unbind(name string) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	C.CgoWebViewUnbind(w.w, cname)
+	return nil
+}
+
+func (w *webview) SetUserAgent(ua string) error {
+	if ua == "" {
+		return errors.New("user agent string cannot be empty")
+	}
+	cua := C.CString(ua)
+	defer C.free(unsafe.Pointer(cua))
+
+	// Вызов C API, которое мы добавили в c_api_impl.hh
+	res := C.webview_set_user_agent(w.w, cua)
+	if res != C.WEBVIEW_ERROR_OK {
+		return errors.New("failed to set user agent")
+	}
 	return nil
 }
