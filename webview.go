@@ -4,9 +4,13 @@ package webview
 #cgo CFLAGS: -I${SRCDIR}/libs/webview/include
 #cgo CXXFLAGS: -I${SRCDIR}/libs/webview/include -DWEBVIEW_STATIC
 
+#cgo linux CXXFLAGS: -DWEBVIEW_GTK -std=c++11
+#cgo linux LDFLAGS: -ldl
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1
+
 #cgo linux openbsd freebsd netbsd CXXFLAGS: -DWEBVIEW_GTK -std=c++11
 #cgo linux openbsd freebsd netbsd LDFLAGS: -ldl
-#cgo linux openbsd freebsd netbsd pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo openbsd freebsd netbsd pkg-config: gtk+-3.0 webkit2gtk-4.0
 
 #cgo darwin CXXFLAGS: -DWEBVIEW_COCOA -std=c++11
 #cgo darwin LDFLAGS: -framework WebKit -ldl
@@ -22,6 +26,7 @@ package webview
 void CgoWebViewDispatch(webview_t w, uintptr_t arg);
 void CgoWebViewBind(webview_t w, const char *name, uintptr_t index);
 void CgoWebViewUnbind(webview_t w, const char *name);
+void CgoWebViewSetUserAgent(webview_t w, const char* ua);
 */
 import "C"
 import (
@@ -122,6 +127,9 @@ type WebView interface {
 
 	// Removes a callback that was previously set by Bind.
 	Unbind(name string) error
+
+	// SetUserAgent sets the HTTP User-Agent used by the webview.
+	SetUserAgent(ua string)
 }
 
 type webview struct {
@@ -215,6 +223,16 @@ func (w *webview) Dispatch(f func()) {
 	dispatch[index] = f
 	m.Unlock()
 	C.CgoWebViewDispatch(w.w, C.uintptr_t(index))
+}
+
+
+func (w *webview) SetUserAgent(ua string) {
+	if w == nil || w.w == nil || ua == "" {
+		return
+	}
+	cstr := C.CString(ua)
+	defer C.free(unsafe.Pointer(cstr))
+	C.CgoWebViewSetUserAgent(w.w, cstr)
 }
 
 //export _webviewDispatchGoCallback

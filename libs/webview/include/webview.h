@@ -1450,6 +1450,20 @@ private:
     }
   }
 
+#if defined(__linux__)
+public:
+  void set_user_agent(const char *ua) {
+    if (ua == nullptr || ua[0] == '\0') return;
+    WebKitSettings *settings =
+        webkit_web_view_get_settings(WEBKIT_WEB_VIEW(m_webview));
+    if (settings == nullptr) {
+      settings = webkit_settings_new();
+    }
+    webkit_settings_set_user_agent(settings, ua);
+    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(m_webview), settings);
+  }
+#endif
+
   bool m_owns_window{};
   GtkWidget *m_window{};
   GtkWidget *m_webview{};
