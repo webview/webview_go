@@ -264,6 +264,11 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title);
  */
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   webview_hint_t hints);
+/*
+ * Sets a custom User-Agent for the current webview (Linux/WebKitGTK impl).
+ * No-op on unsupported platforms.
+*/
+WEBVIEW_API void webview_set_user_agent(webview_t w, const char *ua);
 
 /**
  * Navigates webview to the given URL. URL may be a properly encoded data URI.
