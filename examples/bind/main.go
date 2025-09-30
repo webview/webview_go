@@ -26,6 +26,8 @@ func main() {
 	defer w.Destroy()
 	w.SetTitle("Bind Example")
 	w.SetSize(480, 320, webview.HintNone)
+	//w.SetUserAgent("мой кастомный UA")
+	//w.Navigate("https://www.whatismybrowser.com/detect/what-is-my-user-agent/")
 
 	// A binding that increments a value and immediately returns the new value.
 	w.Bind("increment", func() IncrementResult {

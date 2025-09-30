@@ -25,12 +25,12 @@ void CgoWebViewUnbind(webview_t w, const char *name);
 */
 import "C"
 import (
+	"encoding/json"
+	"errors"
 	_ "github.com/webview/webview_go/libs/mswebview2"
 	_ "github.com/webview/webview_go/libs/mswebview2/include"
 	_ "github.com/webview/webview_go/libs/webview"
 	_ "github.com/webview/webview_go/libs/webview/include"
-	"encoding/json"
-	"errors"
 	"reflect"
 	"runtime"
 	"sync"
@@ -89,6 +89,8 @@ type WebView interface {
 	// SetSize updates native window size. See Hint constants.
 	SetSize(w int, h int, hint Hint)
 
+	SetUserAgent(userAgent string)
+
 	// Navigate navigates webview to the given URL. URL may be a properly encoded data.
 	// URI. Examples:
 	// w.Navigate("https://github.com/webview/webview")
@@ -99,6 +101,8 @@ type WebView interface {
 	// SetHtml sets the webview HTML directly.
 	// Example: w.SetHtml(w, "<h1>Hello</h1>");
 	SetHtml(html string)
+
+	// SetUserAgent(userAgent string)
 
 	// Init injects JavaScript code at the initialization of the new page. Every
 	// time the webview will open a the new page - this initialization code will
@@ -194,6 +198,12 @@ func (w *webview) SetTitle(title string) {
 
 func (w *webview) SetSize(width int, height int, hint Hint) {
 	C.webview_set_size(w.w, C.int(width), C.int(height), C.webview_hint_t(hint))
+}
+
+func (w *webview) SetUserAgent(ua string) {
+	cstr := C.CString(ua)
+	defer C.free(unsafe.Pointer(cstr))
+	C.webview_set_user_agent(w.w, cstr)
 }
 
 func (w *webview) Init(js string) {
